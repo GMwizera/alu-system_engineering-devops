@@ -2,64 +2,22 @@
 # Script that installs and configures Nginx on Ubuntu
 
 # Update package list
-apt-get update -y
+apt-get update
 
 # Install Nginx
-apt-get install nginx -y
+apt-get install -y nginx
 
-# Stop nginx if it's running to make changes
-service nginx stop
+# Create the custom index.html with required content
+echo "Holberton School for the win!" | sudo tee /var/www/html/index.html
 
-# Create the web directory if it doesn't exist
-mkdir -p /var/www/html
-
-# Create custom index.html with required content
-echo "Holberton School for the win!" > /var/www/html/index.html
-
-# Set proper permissions
-chown -R www-data:www-data /var/www/html
-chmod -R 755 /var/www/html
-
-# Backup original configuration
-cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.backup
-
-# Create a simple, clean configuration
-cat > /etc/nginx/sites-available/default << 'EOF'
-server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-
-    root /var/www/html;
-    index index.html index.htm;
-
-    server_name _;
-
-    location / {
-        try_files $uri $uri/ =404;
-    }
-}
-EOF
-
-# Remove any existing symlinks and create fresh one
-rm -f /etc/nginx/sites-enabled/default
-ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-
-# Remove default nginx page and any conflicting configurations
-rm -f /etc/nginx/sites-enabled/default.dpkg-dist
+# Remove the default nginx index file if it exists
 rm -f /var/www/html/index.nginx-debian.html
 
-# Test Nginx configuration
-nginx -t
+# Ensure nginx is not running before we configure it
+service nginx stop
 
-# Start Nginx service
+# Start nginx
 service nginx start
 
-# Restart to ensure all changes take effect
-service nginx restart
-
-# Ensure Nginx is enabled to start on boot
-update-rc.d nginx enable
-
-# Verify the service is running
-sleep 2
-service nginx status
+# Make sure nginx starts on boot
+systemctl enable nginx 2>/dev/null || update-rc.d nginx enable
