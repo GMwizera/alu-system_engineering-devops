@@ -1,12 +1,44 @@
 #!/usr/bin/env bash
-# Installs Nginx with the following configurations:
-#+    Listens on port 80.
-#+    Returns a page containing "Holberton School" when queried
-#++    at the root with a curl GET request.
+# Script that installs and configures Nginx on Ubuntu
 
+# Update package list
 apt-get update -y
-apt-get install nginx -y 
-sudo ufw allow 'Nginx HTTP'
-sh -c 'echo "Holberton School" > /var/www/html/index.html'
-service nginx restart
 
+# Install Nginx
+apt-get install nginx -y
+
+# Create custom index.html with required content
+echo "Holberton School for the win!" > /var/www/html/index.html
+
+# Ensure Nginx is configured to listen on port 80 (default configuration should work)
+# But let's make sure by checking and updating the default site configuration
+cat > /etc/nginx/sites-available/default << 'EOF'
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+EOF
+
+# Enable the site (create symlink if it doesn't exist)
+ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
+# Remove default Nginx page if it exists
+rm -f /etc/nginx/sites-enabled/default.dpkg-dist
+
+# Test Nginx configuration
+nginx -t
+
+# Start Nginx service
+service nginx start
+
+# Ensure Nginx is enabled to start on boot
+update-rc.d nginx enable
