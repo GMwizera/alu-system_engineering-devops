@@ -1,23 +1,14 @@
 #!/usr/bin/env bash
-# Script that installs and configures Nginx on Ubuntu
+# Installs Nginx and sets up a basic HTML page containing "Holberton School"
 
 # Update package list
-apt-get update
+apt-get update -y
 
 # Install Nginx
 apt-get install -y nginx
 
-# Create the custom index.html with required content
-echo "Holberton School for the win!" | sudo tee /var/www/html/index.html
-
-# Remove the default nginx index file if it exists
-rm -f /var/www/html/index.nginx-debian.html
-
-# Ensure nginx is not running before we configure it
-service nginx stop
-
-# Start nginx
+# Start Nginx without using systemctl
 service nginx start
 
-# Make sure nginx starts on boot
-systemctl enable nginx 2>/dev/null || update-rc.d nginx enable
+# Replace the default HTML page with one containing "Holberton School"
+echo "Holberton School for the win!" > /var/www/html/index.html
